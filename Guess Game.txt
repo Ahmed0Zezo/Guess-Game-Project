@@ -1,0 +1,244 @@
+#include <iostream>
+#include <cstdlib>
+#include <string>
+
+using namespace std;
+
+int RandomNumber(int From, int To)
+{
+	int RandNumber = rand() % (To - From + 1) + From;
+
+	return RandNumber;
+}
+
+enum enGameLevel { Easy = 1, Med = 2, Hard = 3 };
+
+enum enWrongAnswer { Higher = 1, Lower = 2 };
+
+struct stGameInfo
+{
+	short ComputerNumber = 0;
+	short UserNumber = 0;
+	short Playerhearts;
+	enGameLevel Level;
+	bool IsPlayerWon;
+	short Tries = 0; // how many tries to finish the game
+	const short ComputerNumberFrom = 1;
+	short ComputerNumberTo = 0;
+};
+
+string Taps(int Number)
+{
+	string Taps = "";
+
+	for (int i = 0; i < Number; i++)
+	{
+		Taps += "\t";
+	}
+	return Taps;
+}
+
+int ReadNumberInRange(int From, int To, string Messege)
+{
+	int Number;
+	do
+	{
+		cout << Messege;
+		cin >> Number;
+	} while (Number < From || Number > To);
+	return Number;
+}
+
+enGameLevel GetGameLevel()
+{
+	short Lv = ReadNumberInRange(1, 3, Taps(2) + "First Choose The Game Level [1] Easy , [2] Med , [3] Hard \n" + Taps(2));
+
+	return (enGameLevel)Lv;
+}
+
+void LevelControl(stGameInfo &GameInfo)
+{
+	switch (GameInfo.Level)
+	{
+	case Easy:
+		GameInfo.Playerhearts = 15;
+		GameInfo.ComputerNumberTo = 300;
+		GameInfo.ComputerNumber = RandomNumber(GameInfo.ComputerNumberFrom, GameInfo.ComputerNumberTo);
+		break;
+
+	case Med:
+		GameInfo.Playerhearts = 10;
+		GameInfo.ComputerNumberTo = 400;
+		GameInfo.ComputerNumber = RandomNumber(GameInfo.ComputerNumberFrom, GameInfo.ComputerNumberTo);
+		break;
+	default:
+		GameInfo.Playerhearts = 5;
+		GameInfo.ComputerNumberTo = 500;
+		GameInfo.ComputerNumber = RandomNumber(GameInfo.ComputerNumberFrom, GameInfo.ComputerNumberTo);
+
+		break;
+	}
+
+}
+
+void FirstScreen(string PlayerName, stGameInfo& GameInfo)
+{
+	cout << Taps(2) << "---------- G u e s s  T h e  N u m b e r  G a m e ----------\n\n";
+	cout << Taps(5) << "Welcome " << PlayerName << "\n\n";
+	cout << Taps(2) << "Today we will play a simple game\n"
+		<< Taps(2) << "What is it ?\n"
+		<< Taps(2) << "Well it is pretty simple\n";
+	GameInfo.Level = GetGameLevel();
+	
+	LevelControl(GameInfo);
+
+	cout << Taps(2) << "Now the Computer Picked a number\n"
+		<< Taps(2) << "But it is a secret and you must find it\n";
+}
+
+bool IsRightAnswer(short UserAnswer, short ComputerNumber)
+{
+	return UserAnswer == ComputerNumber;
+}
+
+void LastWinScreen(stGameInfo GameInfo)
+{
+	cout << Taps(2) << "\n------------------------Won The Game------------------------\n\n";
+	cout << Taps(2) << "Awesome , You are right it is [" << GameInfo.UserNumber << "]\n";
+	cout << Taps(2) << "Congrats man you made it , You did beat the computer\n";
+	cout << Taps(2) << "You Tried " << GameInfo.Tries << " Times but you finally did it!! :)\n";
+	cout << Taps(2) << "Remaining Hearts : " << GameInfo.Playerhearts << "\n";
+	cout << Taps(2) << "\n--------------------------------------------------------------\n";
+
+	//Change Color To Green
+	system("color 2F");
+	
+}
+
+void LastLoseScreen(stGameInfo GameInfo)
+{
+	cout << Taps(2) << "\n------------------------Lost The Game------------------------\n\n";
+	cout << Taps(2) << "Sorry But You Lost :(\n";
+	cout << Taps(2) << "And Computer beats you xD\n";
+	cout << Taps(2) << "You Tried " << GameInfo.Tries << " Times and you lost xD\n";
+	cout << Taps(2) << "Remaining Hearts : " << GameInfo.Playerhearts << " Bruh you died" << "\n";
+	cout << Taps(2) << "Just Losers who dont know that \"" << GameInfo.ComputerNumber << "\" is the right answer\n";
+	cout << Taps(2) << "\n--------------------------------------------------------------" << endl;
+
+	//Change Color To red
+	system("color 4F");
+	cout << "\a";
+}
+
+enWrongAnswer HigherOrLower(short UserAnswer, short RightAnswer)
+{
+	if (UserAnswer > RightAnswer)
+		return Higher;
+	else
+		return Lower;
+}
+
+void ScreenReset()
+{
+	system("CLS");
+	system("Color 0f");
+}
+
+int main()
+{
+	srand((unsigned)time(NULL));
+
+	stGameInfo GameInfo;
+	char WantPlayAgain;
+
+	string PlayerName = "";
+
+	cout << "Hello , Please enter your name\n";
+	cin >> PlayerName;
+
+	do
+
+	{
+		ScreenReset();
+
+		
+		FirstScreen(PlayerName, GameInfo);
+
+		short Hearts = GameInfo.Playerhearts;
+
+		for (int Round = 1; Round <= Hearts; Round++)
+		{
+			// Player tries increased
+			GameInfo.Tries = Round;
+
+			cout << "\n" << Taps(2) << "----------Round [" << Round << "]---------- \n\n";
+
+			cout << Taps(2) << "Hearts Left : " << GameInfo.Playerhearts << "\n";
+
+			if (Round == 1)
+			{
+				GameInfo.UserNumber = ReadNumberInRange(GameInfo.ComputerNumberFrom, GameInfo.ComputerNumberTo,
+					Taps(2) + "So Try To Pick a Number between " + to_string(GameInfo.ComputerNumberFrom) + " and "
+					+ to_string(GameInfo.ComputerNumberTo) + "\n" + Taps(2));
+					
+			}
+			else
+			{
+				GameInfo.UserNumber = ReadNumberInRange(GameInfo.ComputerNumberFrom, GameInfo.ComputerNumberTo, Taps(2) + "Now try to pick a number again\n" + Taps(2));
+			}
+			// if User Guess the right Answer
+			if (IsRightAnswer(GameInfo.UserNumber, GameInfo.ComputerNumber))
+			{
+				GameInfo.IsPlayerWon = true;
+				LastWinScreen(GameInfo);
+				break;
+			}
+			// User Guess Wrong Answer
+			else
+			{
+				// his hearts decreased
+				GameInfo.Playerhearts--;
+
+
+
+				if (GameInfo.Playerhearts == 0)
+				{
+					GameInfo.IsPlayerWon = false;
+					LastLoseScreen(GameInfo);
+					break;
+				}
+
+				switch (HigherOrLower(GameInfo.UserNumber, GameInfo.ComputerNumber))
+				{
+				case Higher:
+					cout << Taps(2) << "Wrong Answer : Your Number is Higher than the correct number" << endl;
+					break;
+				default:
+					cout << Taps(2) << "Wrong Answer : Your Number is Lower than the correct number" << endl;
+					break;
+				}
+			}
+
+		}
+
+		do
+		{
+			cout << "\nDo you want to play again Y / N ? ";
+			cin >> WantPlayAgain;
+		} while (WantPlayAgain != 'y' && WantPlayAgain != 'Y' && WantPlayAgain != 'n' && WantPlayAgain != 'N');
+
+	} while (WantPlayAgain == 'y' || WantPlayAgain == 'Y');
+
+
+
+
+
+
+
+
+
+
+
+
+	return 0;
+}
